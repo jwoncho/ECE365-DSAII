@@ -78,52 +78,64 @@ bool hashTable::rehash(){
 //Function that inserts the values in the hash table
 //This function checks if the key exsists and executes linear probing if it does
 int hashTable::insert(const string &key, void *pv){
-	int hashVal = hash(key);
-	int i = 0;
-	do{
-		if(data.at(hashVal).key == key)
-			return 1;
-		if(data.at(hashVal).isOccupied == false && data.at(hashVal).isDeleted == false){
-			filled++;
-			data.at(hashVal).isOccupied = true;
-			data.at(hashVal).key = key;
-			if(pv != nullptr)
-				data.at(hashVal).pv = pv;
-
-			if(filled == capacity){			//checks if rehashing is needed
-				if(rehash())
-					return 0;
-				else
-					return 2;
-			}
-			return 0;
-		}
-		else{
-			i++;
-			hashVal++;
-			hashVal = hashVal % data.size();
-		}
+	if (capacity <= (2 * filled))		// Checks if table needs to be rehashed
+	{
+		if(!rehash())
+			return 2;
 	}
-	while(i < probeLim);		//makes sure not to do too many probing
-	return 2;
+
+	int keyAddress = hash(key);
+	int probe = -1;
+
+	while (data[keyAddress].isOccupied)
+	{
+		if (data[keyAddress].key == key)				// If the key already exists in the table
+		{												// and is not deleted, return 1
+			if (!(data[keyAddress].isDeleted))
+				return 1;
+			else 										// If the key already exists in the table
+			{											// and was previously deleted, mark it as
+				data[keyAddress].isDeleted = false;		// not deleted anymore
+				data[keyAddress].pv = pv;
+				return 0;								
+			}											
+		} else if ((data[keyAddress].isDeleted) && (probe == -1))	// Implementation of Linear Probing
+		{
+			probe = keyAddress;
+		}
+		keyAddress++;
+		if (keyAddress == capacity)		// Prevents accessing an element not in the data vector
+			keyAddress = 0;
+	}
+
+	if (probe != -1)					// Puts the data in the probed spot
+		keyAddress = probe;
+
+	data[keyAddress].key = key;
+	data[keyAddress].isOccupied = true;
+	data[keyAddress].isDeleted = false;
+	data[keyAddress].pv = pv;
+	filled++;
+	return 0;
 }
 
 //Function that searches for the given key and looks for an empty box otherwise
 int hashTable::findPos(const string &key){
 	unsigned int hashVal = hash(key);
 	int i = 0;
-	do{
-		if(data.at(hashVal).key == key){
-			
-			return hashVal;
+	while (data[hashVal].isOccupied){
+		if(data[hashVal].key == key){
+			if(data[hashVal].isDeleted)
+				return -1;
+			else
+				return hashVal;
 		}
 		else{
-			i++;
 			hashVal++;
-			hashVal = hashVal % data.size();
+			if(hashVal == capacity)	//prevents accesssing an element in the data vector
+				hashVal = 0;
 		}
 	}
-	while(i < probeLim);		//makes sure not to do too many probing
 	return -1;
 }
 
