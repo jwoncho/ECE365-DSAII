@@ -11,14 +11,14 @@ Jaewon Cho DSA Program 3 graph.cpp
 #include <fstream>
 #include <iterator>
 #include <limits.h>
-#define VERTICES 512
+#define VERTEX 512 // To set size of hashTable
 
 using namespace std;
 
 // Constructor for graph class
 graph::graph(){
 	size = 0;
-	mapping = new hashTable(VERTICES);
+	mapping = new hashTable(VERTEX);
 }
 
 // Inserts nodes into the graph 
@@ -57,7 +57,7 @@ void graph::insert(const string &input){
 		size++;
 	}
 
-	// Inserting the edge that connects the nodes
+	// Connecting the nodes
 	e.cost = stoi(weight);
 	e.next = node2;
 	node1 -> adjList.push_back(e);
@@ -119,7 +119,6 @@ void graph::output(const string &file){
 			outfile << (*iter)->id << ": NO PATH" << endl;
 		else{
 			outfile << (*iter)->id << ": " << (*iter)->distance << " [";
-
 			for (list<string>::const_iterator iter2 = (*iter)->path.begin(); iter2 != --(*iter)->path.end(); iter2++)
 				outfile << *iter2 << ", ";
 
